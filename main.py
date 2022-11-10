@@ -1,7 +1,6 @@
 # Drone Project
 
 # Finds face from image feed, returns bounding box?
-from turtle import position
 
 
 def find_face(frame):
@@ -21,7 +20,7 @@ def adjust_position(face):
     position = (0, 0)
     # Need distance from drone and some maths
     dist = get_face_distance()
-    
+
     # adjust position
     # exit when relatively central
     # TODO
