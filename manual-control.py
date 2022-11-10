@@ -1,6 +1,7 @@
 from djitellopy import Tello
 import cv2
 import threading
+import keyboard
 
 def main():
     # set up drone
@@ -9,35 +10,41 @@ def main():
     drone.connect()
 
     #create video thread
-    GetVideo = threading.Thread(target=GetVideo)
-    GetVideo.daemon = True
-    GetVideo.start()
+    v = threading.Thread(target=GetVideo)
+    v.daemon = True
+    v.start()
 
+    drone.takeoff()
+
+    # Do pip install keyboard
     #get keyboard input
     while True:
-        key = cv2.waitKey(1) & 0xff
-        if key == 27: # ESC
-            drone.emergency()
-            break
-        elif key == ord(' '):
-            drone.land()
-            break
-        elif key == ord('w'):
-            drone.move_forward(30)
-        elif key == ord('s'):
-            drone.move_back(30)
-        elif key == ord('a'):
-            drone.move_left(30)
-        elif key == ord('d'):
-            drone.move_right(30)
-        elif key == ord('e'):
-            drone.rotate_clockwise(30)
-        elif key == ord('q'):
-            drone.rotate_counter_clockwise(30)
-        elif key == ord('r'):
-            drone.move_up(30)
-        elif key == ord('f'):
-            drone.move_down(30)
+        try:
+            if keyboard.is_pressed('esc'): # ESC
+                drone.emergency()
+                break
+            elif keyboard.is_pressed(' '):
+                drone.land()
+                break
+            elif keyboard.is_pressed('w'):
+                print('forward')
+                drone.move_forward(30)
+            elif keyboard.is_pressed('s'):
+                drone.move_back(30)
+            elif keyboard.is_pressed('a'):
+                drone.move_left(30)
+            elif keyboard.is_pressed('d'):
+                drone.move_right(30)
+            elif keyboard.is_pressed('e'):
+                drone.rotate_clockwise(30)
+            elif keyboard.is_pressed('q'):
+                drone.rotate_counter_clockwise(30)
+            elif keyboard.is_pressed('r'):
+                drone.move_up(30)
+            elif keyboard.is_pressed('f'):
+                drone.move_down(30)
+        except:
+            continue
 
 def GetVideo():
     # get video stream from drone
