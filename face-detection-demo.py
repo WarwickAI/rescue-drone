@@ -8,6 +8,8 @@ input = cv2.VideoCapture(0)
 with detection.FaceDetection(model_selection = 0,min_detection_confidence=0.5) as faceDetection: 
     while input.isOpened():
         success, frame = input.read()
+        imageHeight, imageWidth = frame.shape[0], frame.shape[1]
+
         if not success:
             print("Cannot get frame")
 
@@ -43,31 +45,31 @@ with detection.FaceDetection(model_selection = 0,min_detection_confidence=0.5) a
             mouthY = detection.get_key_point(results.detections[0], detection.FaceKeyPoint.MOUTH_CENTER).y
 
             faceX = (noseX + lEarX + rEarX + lEyeX + rEyeX + mouthX) / 6 #get overall face coords by averaging face point coords
-            faceY = (noseX + lEarY + rEarY + lEyeY + rEyeY + mouthY) / 6
-            cv2.line(frame, (int(faceX * frame.shape[1]), frame.shape[0]), (int(faceX * frame.shape[1]), 0), (255,0,0), 2) #draws lines representing these coords
-            cv2.line(frame, (frame.shape[1], int(faceY * frame.shape[0])), (0, int(faceY * frame.shape[0])), (255,0,0), 2)
+            faceY = (noseY + lEarY + rEarY + lEyeY + rEyeY + mouthY) / 6
+            cv2.line(frame, (int(faceX * imageWidth), imageHeight), (int(faceX * imageWidth), 0), (255,0,0), 2) #draws lines representing these coords
+            cv2.line(frame, (imageWidth, int(faceY * imageHeight)), (0, int(faceY * imageHeight)), (255,0,0), 2)
 
             if faceX < 0.33333: #draw a rectangle based on which third the face is in
                 if faceY < 0.33333: #top right
-                    cv2.rectangle(frame, (0,0), (int(frame.shape[1] * 0.33333), int(frame.shape[0] * 0.33333)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (0,0), (int(imageWidth * 0.33333), int(imageHeight * 0.33333)), (0, 255, 0), 2)
                 elif faceY > 0.66666: #bottom right
-                    cv2.rectangle(frame, (0, frame.shape[0]), (int(frame.shape[1] * 0.33333), int(frame.shape[0] * 0.66666)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (0, imageHeight), (int(imageWidth * 0.33333), int(imageHeight * 0.66666)), (0, 255, 0), 2)
                 else: #middle right
-                    cv2.rectangle(frame, (0,int(frame.shape[0]*0.66666)), (int(frame.shape[1] * 0.33333), int(frame.shape[0] * 0.33333)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (0,int(imageHeight*0.66666)), (int(imageWidth * 0.33333), int(imageHeight * 0.33333)), (0, 255, 0), 2)
             elif faceX > 0.66666:
                 if faceY < 0.33333: #top left
-                    cv2.rectangle(frame, (int(frame.shape[1]),0), (int(frame.shape[1] * 0.66666), int(frame.shape[0] * 0.33333)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (int(imageWidth),0), (int(imageWidth * 0.66666), int(imageHeight * 0.33333)), (0, 255, 0), 2)
                 elif faceY > 0.66666: #bottom left
-                    cv2.rectangle(frame, (int(frame.shape[1]), frame.shape[0]), (int(frame.shape[1] * 0.66666), int(frame.shape[0] * 0.66666)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (int(imageWidth), imageHeight), (int(imageWidth * 0.66666), int(imageHeight * 0.66666)), (0, 255, 0), 2)
                 else: #middle left
-                    cv2.rectangle(frame, (int(frame.shape[1]),int(frame.shape[0]*0.66666)), (int(frame.shape[1] * 0.66666), int(frame.shape[0] * 0.33333)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (int(imageWidth),int(imageHeight*0.66666)), (int(imageWidth * 0.66666), int(imageHeight * 0.33333)), (0, 255, 0), 2)
             else:
                 if faceY < 0.33333: #top middle
-                    cv2.rectangle(frame, (int(frame.shape[1] * 0.66666),0), (int(frame.shape[1] * 0.33333), int(frame.shape[0] * 0.33333)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (int(imageWidth * 0.66666),0), (int(imageWidth * 0.33333), int(imageHeight * 0.33333)), (0, 255, 0), 2)
                 elif faceY > 0.66666: #bottom middle
-                    cv2.rectangle(frame, (int(frame.shape[1] * 0.66666), frame.shape[0]), (int(frame.shape[1] * 0.33333), int(frame.shape[0] * 0.66666)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (int(imageWidth * 0.66666), imageHeight), (int(imageWidth * 0.33333), int(imageHeight * 0.66666)), (0, 255, 0), 2)
                 else: #middle middle
-                    cv2.rectangle(frame, (int(frame.shape[1] * 0.66666),int(frame.shape[0]*0.66666)), (int(frame.shape[1] * 0.33333), int(frame.shape[0] * 0.33333)), (0, 255, 0), 2)
+                    cv2.rectangle(frame, (int(imageWidth * 0.66666),int(imageHeight*0.66666)), (int(imageWidth * 0.33333), int(imageHeight * 0.33333)), (0, 255, 0), 2)
             
         # Flip the frame
         cv2.imshow('face detection', cv2.flip(frame, 1))
