@@ -9,10 +9,25 @@ def is_face_visible(frame): #gets wether a face is on a given frame
     with detection.FaceDetection(model_selection = 0,min_detection_confidence=0.5) as faceDetection: 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = faceDetection.process(frame) #processes frame
-        if result.detections: #return wether a face was found or not
-            return True
-        else:
+        # Make sure the whole face is visible
+        try:
+            noseX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.NOSE_TIP).x #get coords for face points
+            noseY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.NOSE_TIP).y
+            lEarX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EAR_TRAGION).x
+            lEarY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EAR_TRAGION).y
+            rEarX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EAR_TRAGION).x
+            rEarY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EAR_TRAGION).y
+            lEyeX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EYE).x
+            lEyeY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EYE).y
+            rEyeX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EYE).x
+            rEyeY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EYE).y
+            mouthX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.MOUTH_CENTER).x
+            mouthY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.MOUTH_CENTER).y
+            faceX = (noseX + lEarX + rEarX + lEyeX + rEyeX + mouthX) / 6 #get overall face coords by averaging face point coords
+            faceY = (noseY + lEarY + rEarY + lEyeY + rEyeY + mouthY) / 6
+        except:
             return False
+        return True
 
 def findReigon(frame):
     detection = mp.solutions.face_detection
@@ -20,20 +35,23 @@ def findReigon(frame):
     with detection.FaceDetection(model_selection = 0,min_detection_confidence=0.5) as faceDetection: 
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         result = faceDetection.process(frame)
-        noseX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.NOSE_TIP).x #get coords for face points
-        noseY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.NOSE_TIP).y
-        lEarX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EAR_TRAGION).x
-        lEarY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EAR_TRAGION).y
-        rEarX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EAR_TRAGION).x
-        rEarY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EAR_TRAGION).y
-        lEyeX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EYE).x
-        lEyeY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EYE).y
-        rEyeX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EYE).x
-        rEyeY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EYE).y
-        mouthX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.MOUTH_CENTER).x
-        mouthY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.MOUTH_CENTER).y
-        faceX = (noseX + lEarX + rEarX + lEyeX + rEyeX + mouthX) / 6 #get overall face coords by averaging face point coords
-        faceY = (noseY + lEarY + rEarY + lEyeY + rEyeY + mouthY) / 6
+        try:
+            noseX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.NOSE_TIP).x #get coords for face points
+            noseY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.NOSE_TIP).y
+            lEarX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EAR_TRAGION).x
+            lEarY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EAR_TRAGION).y
+            rEarX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EAR_TRAGION).x
+            rEarY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EAR_TRAGION).y
+            lEyeX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EYE).x
+            lEyeY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.LEFT_EYE).y
+            rEyeX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EYE).x
+            rEyeY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.RIGHT_EYE).y
+            mouthX = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.MOUTH_CENTER).x
+            mouthY = detection.get_key_point(result.detections[0], detection.FaceKeyPoint.MOUTH_CENTER).y
+            faceX = (noseX + lEarX + rEarX + lEyeX + rEyeX + mouthX) / 6 #get overall face coords by averaging face point coords
+            faceY = (noseY + lEarY + rEarY + lEyeY + rEyeY + mouthY) / 6
+        except:
+            return 'centre'
         if faceX < 0.33333: #draw a rectangle based on which third the face is in
             if faceY < 0.33333: #top right
                 return 'right'
@@ -57,29 +75,37 @@ def findReigon(frame):
                 return 'centre'
 
 
-def search_for_face(minH, maxH, frame):
+def search_for_face(minH, maxH):
     UPBY = 20
     while True:
         while drone.get_height() <= maxH:
-            drone.rotate_clockwise(360)
+            frame = get_frame()
+            #drone.rotate_clockwise(360)
+            cv2.imshow('face detection', frame)
+            if cv2.waitKey(5) & 0xFF == ord('q'):
+                break
             if is_face_visible(frame):
                 return
-            time.sleep(2)
+           # time.sleep(2)
             drone.move_up(UPBY)
             time.sleep(2)
 
         while drone.get_height() >= minH :
-            drone.rotate_clockwise(360)
+            frame= get_frame()
+            #drone.rotate_clockwise(360)
+            cv2.imshow('face detection', frame)
+            if cv2.waitKey(5) & 0xFF == ord('q'):
+                break
             if is_face_visible(frame):
                 return
-            time.sleep(2)
+           # time.sleep(2)
             drone.move_down(UPBY)
             time.sleep(2)
 
 def get_frame():
     frame = drone.get_frame_read().frame
     frame = cv2.resize(frame, (1000, 1000))
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) ##maybe wrong
+    frame1 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) ##maybe wrong
     return frame
 
 def rotate(direction):
@@ -100,8 +126,8 @@ drone.streamon()
 
 detection = mp.solutions.face_detection
 
-search_for_face(100, 300, get_frame())
-## Tracking loop
+search_for_face(100, 300)
+## Input loop
 while True:
     frame = get_frame()
     region = findReigon(frame)
