@@ -51,28 +51,28 @@ def findReigon(frame):
             faceX = (noseX + lEarX + rEarX + lEyeX + rEyeX + mouthX) / 6 #get overall face coords by averaging face point coords
             faceY = (noseY + lEarY + rEarY + lEyeY + rEyeY + mouthY) / 6
         except:
-            return 'centre'
+            return (None, None)
         if faceX < 0.33333: #draw a rectangle based on which third the face is in
-            if faceY < 0.33333: #top right
-                return 'right'
-            elif faceY > 0.66666: #bottom right
-                return 'right'
-            else: #middle right
-                return 'right'
+            if faceY < 0.33333: #top left
+                return ('high', 'right')
+            elif faceY > 0.66666: #bottom left
+                return ('low', 'right')
+            else: #middle left
+                return ('centre', 'right')
         elif faceX > 0.66666:
             if faceY < 0.33333: #top left
-                return 'left'
+                return ('high', 'left')
             elif faceY > 0.66666: #bottom left
-                return 'left'
+                return ('low', 'left')
             else: #middle left
-                return 'left'
+                return ('centre', 'left')
         else:
-            if faceY < 0.33333: #top middle
-                return 'centre'
-            elif faceY > 0.66666: #bottom middle
-                return 'centre'
-            else: #middle middle
-                return 'centre'
+            if faceY < 0.33333: #top left
+                return ('high', 'centre')
+            elif faceY > 0.66666: #bottom left
+                return ('low', 'centre')
+            else: #middle left
+                return ('centre', 'centre')
 
 
 def search_for_face(minH, maxH):
@@ -88,7 +88,7 @@ def search_for_face(minH, maxH):
                 return
            # time.sleep(2)
             drone.move_up(UPBY)
-            time.sleep(2)
+            time.sleep(1)
 
         while drone.get_height() >= minH :
             frame= get_frame()
@@ -100,7 +100,7 @@ def search_for_face(minH, maxH):
                 return
            # time.sleep(2)
             drone.move_down(UPBY)
-            time.sleep(2)
+            time.sleep(1)
 
 def get_frame():
     frame = drone.get_frame_read().frame
@@ -108,19 +108,13 @@ def get_frame():
     frame1 = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB) ##maybe wrong
     return frame
 
-def rotate(direction):
-    if direction == 'left':
-        drone.rotate_counter_clockwise(30)
-    elif direction == 'right':
-        drone.rotate_clockwise(30)
-
 
 global drone
 drone = Tello()
 
 drone.connect()
-drone.takeoff()
 print("Battery: ", drone.get_battery())
+drone.takeoff()
 
 drone.streamon()
 
@@ -130,15 +124,23 @@ search_for_face(100, 300)
 ## Input loop
 while True:
     frame = get_frame()
-    region = findReigon(frame)
-    if region == 'right':
-        rotate(region)
-    elif region == 'left':
-        rotate(region)
-    elif region == 'centre':
-        continue
-
-    # Flip the frame
+    (vertical, horizontal) = findReigon(frame)
+    # Pivot
+    if horizontal == 'right':
+        drone.rotate_counter_clockwise(15)
+    elif horizontal == 'left':
+        drone.rotate_clockwise(15)
+    # Move vertical
+    # if vertical == 'high':
+    #     drone.move_down(20)
+    # elif vertical == 'low':
+    #     drone.move_up(20)
+    # No face is found
+    if vertical == None:
+        drone.rotate_clockwise(360)
+        time.sleep(5)
+    
+    # Show image and exit if 'q' pressed
     cv2.imshow('face detection', frame)
     if cv2.waitKey(5) & 0xFF == ord('q'):
         break
